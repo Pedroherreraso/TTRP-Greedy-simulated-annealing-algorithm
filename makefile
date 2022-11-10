@@ -1,13 +1,13 @@
 programa: main.o leer_archivo.o
 	g++ -o programa main.o leer_archivo.o
 
-main.o: main.cpp leer_archivo.h
+main.o: 
 	g++ -c main.cpp
 
-leer_archivo.o: leer_archivo.cpp leer_archivo.h
-	g++ -c leer_archivo.cpp
+leer_archivo.o: 
+	g++ -c -Iinclude src/leer_archivo.cpp
 
 run: 
 	./programa
 clean:
-	rm -f *.o
+	rm -f programa *.o
