@@ -7,7 +7,7 @@ Truck and trailer routing problem tiene su explicacion en los siguientes links:
 - https://www.sciencedirect.com/science/article/pii/S0305054800000563
 - https://www.sciencedirect.com/science/article/pii/S0305054812001724
 
-Implemente 2 typos de algoritmos, Simulated annealing con Alguna mejora y el algoritmo Greedy.
+Implemente 2 tipos de algoritmos, Simulated Annealing con alguna mejora y el algoritmo Greedy.
 
 ## Uso
 
