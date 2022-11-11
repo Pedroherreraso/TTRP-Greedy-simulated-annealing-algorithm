@@ -1,8 +1,9 @@
 #include <iostream>
 #include "include/leer_archivo.h"
-using namespace std;
 int main(){
-    string archivo = "Pruebas/TTRP_01.txt";
+    string informacion;
+    cin >> informacion;
+    string archivo;
     leer_archivo(archivo);
     return 0;
 }
