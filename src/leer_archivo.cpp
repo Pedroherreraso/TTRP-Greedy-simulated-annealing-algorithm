@@ -6,7 +6,7 @@ void leer_archivo (string filename){
     // Obtener línea de archivo, y almacenar contenido en "linea"
      for(int i = 0; i < 1; i++){
    	    getline(archivo, linea);
-        cout << linea << endl;
+        cout << linea[3];
         // tomar los datos de la primera linea del archivo
         // falta separar los datos
         

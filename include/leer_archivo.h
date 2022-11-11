@@ -4,5 +4,5 @@
 #include <fstream>
 #include <vector>
 using namespace std;
-void leer_archivo (string filename);
+void leer_archivo (const char *filename);
 #endif

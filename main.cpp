@@ -1,9 +1,10 @@
 #include <iostream>
 #include "include/leer_archivo.h"
-int main(){
-    string informacion;
-    cin >> informacion;
-    string archivo;
-    leer_archivo(archivo);
+#include <vector>
+#include <sstream>
+using namespace std;
+int main(int argc, char *argv[]){
+    leer_archivo(argv[1]);
+    int iteraciones = atoi(argv[2]);
     return 0;
 }
