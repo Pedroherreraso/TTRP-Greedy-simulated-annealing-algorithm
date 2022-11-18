@@ -1,29 +1,29 @@
 #include <vector>
-#ifndef VEHICULOS_H
-#define VEHICULOS_H
-
-class Nodo {
-    public:
-        double x,y,demanda;
-        int id,tipo;
-        bool visited;
+#ifndef VEHICULOS
+#define VEHICULOS
+class Cliente{
+public:
+	double x, y, demanda;
+	int id;
+	bool visitado;
+    int tipo_cliente;
 };
 
-class Camion {
-    public:
-        double capacidad_camion,carga_actual;
-        int cliente_actual;
-        std::vector <Nodo> tour;
-        void add_node(Nodo*, double**);
-        bool ok_capacity(Nodo) const; 
-    
+class Camion{
+public:
+	int id_posicion;
+    double capacidad_camion,carga_actual;
+	std::vector <Cliente> tour; 
+	void anadir_cliente(Cliente*, double**);
+	bool capacidad_ok(Cliente) const;
 };
 
-class Trailer {
-    public: 
-        double capacidad_trailer,carga_actual,id_actual;
-        void add_node(Nodo*, double**);
-        
-        
+class Trailer{
+public:
+	int id_posicion;
+	double capacidad_trailer,carga_actual;
+	std::vector <Cliente> tour;
+	void anadir_cliente(Cliente*, double**);
+	 
 };
 #endif
