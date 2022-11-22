@@ -4,7 +4,7 @@
 #include <cmath> // sqrt, pow
 #include <iomanip> // std::setprecision
 #include "grafo.h"
-
+// se calcula la distancia entre los nodos(clientes)
 void Grafo::calculo_distancia_nodos()
 {
 	for(int i = 0; i < numero_cliente; i++){
@@ -48,7 +48,7 @@ Grafo::Grafo(std::vector<std::vector<int> > param,
 	for(int i = 0; i < numero_cliente; i++){
 		distancia_matriz[i] = new double [numero_cliente];
 		for(int j = 0; j < numero_cliente; j++){
-			distancia_matriz[i][j] = 0;// initialization all elements in a row
+			distancia_matriz[i][j] = 0;// inicialización de todos los elementos en una fila
 		}
 	}
 	calculo_distancia_nodos();
@@ -139,7 +139,7 @@ void Grafo::GreedyAlgorithm()
 	}
 	std::cout << "algorithm done." << std::endl;
 }
-
+// Calcula la distancia total del tour
 void Grafo::calculo_distancia_tour(std::vector<Cliente>tour, double &tour_distance) const
 {
 	if(tour.size() > 2){
