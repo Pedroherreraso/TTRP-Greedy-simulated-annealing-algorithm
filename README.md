@@ -13,8 +13,8 @@ Implemente 2 tipos de algoritmos, Simulated Annealing con alguna mejora y el alg
 
 ```make```
 
-```./TTRP "ubicacion del archivo" "numero de iteraciones" ```
+```./TTRP "ubicacion del archivo" "numero de iteraciones" "Temperatura inicial" ```
 
 Ejemplo:
 
-``` ./TTRP instances/TTRP_01.txt 1000 ```
+``` ./TTRP instances/TTRP_01.txt 1000 100 ```
