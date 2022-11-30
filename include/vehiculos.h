@@ -17,13 +17,12 @@ public:
 	void anadir_cliente(Cliente*, double**);
 	bool capacidad_ok(Cliente) const;
 };
-
 class Trailer{
 public:
-	int id_posicion;
-	double capacidad_trailer,carga_actual;
-	std::vector <Cliente> tour;
-	void anadir_cliente(Cliente*, double**);
-	 
+	int posicion_actual;
+	double capacidad_trailer,cargar_actual_trailer;
+	std::vector <Cliente> tour; 
+	void anadir_cliente_trailer(Cliente*,double**);
+	bool capacidad_ok(Cliente) const;
 };
 #endif
