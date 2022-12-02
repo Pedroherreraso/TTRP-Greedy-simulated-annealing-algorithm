@@ -10,6 +10,7 @@ Truck and trailer routing problem tiene su explicacion en los siguientes links:
 Implemente 2 tipos de algoritmos, Simulated Annealing con alguna mejora y el algoritmo Greedy.
 
 ## Uso
+Para que el algoritmo fucione las instancias de prueba solo pueden ser numeros enteros 
 
 ```make```
 
