@@ -1,11 +1,4 @@
+#include "vehiculos.h"
 #ifndef SA
-
-class Sa
-{
-public:
-    
-};
-
-
-
+void simulated_annealing(Camion camion,int iteraciones,double temperatura);
 #endif
