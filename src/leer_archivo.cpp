@@ -10,7 +10,7 @@ void leer_archivo (const char *archivo,std::vector<std::vector<int> >&param,int 
     {
         std::stringstream ss(linea);
 	        std::vector<int> datos_cliente;
-	        double tipo_cliente;
+	        int tipo_cliente;
 	        while (ss >> tipo_cliente){
 	      	    datos_cliente.push_back(tipo_cliente);
 	        }

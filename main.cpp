@@ -15,11 +15,11 @@ int main(int argc, char *argv[]){
     traileres = 0;
     capacidad_traileres = 0.0;
     leer_archivo(argv[1],param,camiones,capacidad_camiones, traileres, capacidad_traileres, clientes);
-   	Grafo* grafo = new Grafo(param, capacidad_camiones, camiones);
+   	Grafo* grafo = new Grafo(param, capacidad_camiones, camiones,capacidad_traileres,traileres);
 	grafo->GreedyAlgorithm();
 	grafo->show_each_car_tour();
-	// grafo->show_node_info();
-	// grafo->mostrar_distancias();
+	//grafo->show_node_info();
+	//grafo->mostrar_distancias();
 	delete grafo;
 	grafo = nullptr;
     return 0;
