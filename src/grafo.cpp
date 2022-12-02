@@ -101,13 +101,16 @@ void Grafo::GreedyAlgorithm()
 {
 		int trailer_idx = 0;
 		int car_idx = 0;
+		int iteraciones = 0;
 	while(!is_all_visited()){
+		iteraciones +=1;
 		int best_node_idx;
 		double min_distance = 100000;
 		bool is_return_depot = true;
 		
 		if(traileres[trailer_idx].tour_trailer.empty()){
 			traileres[trailer_idx].anadir_cliente_trailer(&clientes[0], distancia_matriz,camiones[car_idx]);// nodes[0] is depot
+			camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz,1);
 		}
 
 		for(int node_idx = 1; node_idx < numero_cliente; node_idx++){
@@ -146,7 +149,6 @@ void Grafo::GreedyAlgorithm()
 					car_idx += 1;// assign next vehicle
 			}	}
 			else{
-				std::cout << "Cannot solve this by Greedy algorithm." << std::endl;
 				break;// std::exit(0);
 				}
 			}	
@@ -166,16 +168,17 @@ void Grafo::GreedyAlgorithm()
 							car_idx += 1;// assign next vehicle
 					}	
 					else{
-						std::cout << "Cannot solve this by Greedy algorithm." << std::endl;
 						break;// std::exit(0);
 						}
 					}	
 		
 			}}
 	}//while loop done
-	if(camiones[car_idx].id_posicion != 0){// in case the vehicle did not return back to the depot
+	if(traileres[car_idx].posicion_actual != 0){// in case the vehicle did not return back to the depot
+				traileres[trailer_idx].anadir_cliente_trailer(&clientes[0], distancia_matriz,camiones[car_idx]);
 				camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz,1);
 	}
+	greedyonlyvehicles(car_idx,iteraciones);
 	std::cout << "algorithm done." << std::endl;
 }
 void Grafo::calculo_distancia_tour(std::vector<Cliente>tour, double &tour_distance) const
@@ -234,12 +237,53 @@ std::cout << "total visited customer:" << total_visited_customer << "/" << numer
 	std::cout << "total visited customer trailer:" << total_visited_customer_trailer << "/" << numero_cliente - 1 << std::endl;// -1 denotes not counting the depot
 	std::cout << "total distance trailer:" << total_tour_distance_trailer << "km" << std::endl;
 }
-// void Grafo::show_node_info() const
-// {
-// 	std::cout << std::endl << "idx,x,y,demand,tw_open,tw_close,unload_time" << std::endl;
-// 	for(int i = 0; i < numero_cliente; i++){
-// 		std::cout << clientes[i].id << " " << clientes[i].x << " " << clientes[i].y << " " << clientes[i].demanda << \
-// 			" " << std::endl;
-// 	}
-// }
+
+void Grafo::greedyonlyvehicles(int car_idx,int iteraciones){
+	int vehiculos = car_idx;
+	int max_iteraciones = iteraciones;
+	while(!is_all_visited()){
+		max_iteraciones +=1;
+		int best_node_idx;
+		double min_distance = 100000;
+		bool is_return_depot = true;
+		
+		if(camiones[vehiculos].tour.empty()){
+			camiones[vehiculos].anadir_cliente(&clientes[0], distancia_matriz,1);// nodes[0] is depot
+		}
+
+		for(int node_idx = 1; node_idx < numero_cliente; node_idx++){
+			if(!clientes[node_idx].visitado){
+				if(camiones[vehiculos].capacidad_ok(clientes[node_idx])){
+						double tmp_distance = distancia_matriz[camiones[vehiculos].id_posicion][node_idx];
+						if(tmp_distance < min_distance){
+							min_distance = tmp_distance;
+							is_return_depot = false;
+							best_node_idx = node_idx;
+						}
+					}
+				}
+			}
+
+		if(!is_return_depot){
+			camiones[vehiculos].anadir_cliente(&clientes[best_node_idx], distancia_matriz,1);
+		}
+		else{// if edges are not found, return depot
+			if(vehiculos + 1 < numero_camion){// check if the rest of vehicles exists
+				if(camiones[vehiculos].id_posicion != 0){// in case the vehicle did not return back to the depot
+					camiones[vehiculos].anadir_cliente(&clientes[0],distancia_matriz,1);
+				}
+				vehiculos += 1;// assign next vehicle
+			}
+			else{
+				break;// std::exit(0);
+			}
+			
+		}
+	}//while loop done
+	if(camiones[vehiculos].id_posicion != 0){// in case the vehicle did not return back to the depot
+				camiones[vehiculos].anadir_cliente(&clientes[0], distancia_matriz,1);
+	}
+	std::cout << " Iteraciones realizadas por el algoritmo greedy: "<< max_iteraciones;
+}
+
 
