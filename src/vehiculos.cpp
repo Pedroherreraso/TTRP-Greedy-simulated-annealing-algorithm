@@ -3,12 +3,12 @@
 
 void Camion::anadir_cliente(Cliente *a, double** matriz, int c)
 {
-	if (c = 1){tour.push_back(*a);
-	carga_actual += a->demanda;
-	id_posicion = a->id;
-	a->visitado= true;}
-	else{
-		id_posicion = a -> id;
+	if (c == 1){tour.push_back(*a);
+		carga_actual += a->demanda;
+		id_posicion = a->id;
+		a->visitado= true;
+	}else{
+		id_posicion = a->id;
 	}
 }
 
