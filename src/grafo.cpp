@@ -159,7 +159,6 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 					}
 				}
 			}
-
 			if (identificador_ruta_camion == 0){
 				if (identificador_subtour == 0){
 					if (clientes[best_node_idx].tipo_cliente == 0){
@@ -178,40 +177,47 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 							}
 						}
 					}else{
-						camiones[car_idx].anadir_cliente(&clientes[best_node_idx], distancia_matriz, 1);
 						if(traileres[trailer_idx].posicion_actual == 0){
+							if (camiones[car_idx].tour.empty()){
+								camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz, 1);
+							}
+							camiones[car_idx].anadir_cliente(&clientes[best_node_idx], distancia_matriz, 1);
 							identificador_ruta_camion = 1;
 						}
 						else{
+							if(camiones[car_idx].tour.empty()){
+								camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz,1);// nodes[0] is depot
+							}
 							identificador_subtour = 1;
+							camiones[car_idx].anadir_cliente(&clientes[best_node_idx], distancia_matriz, 1);
 						}
 					}
 				}else{
-					if(distancia_matriz[traileres[trailer_idx].posicion_actual][camiones[car_idx].id_posicion] > distancia_matriz[camiones[car_idx].id_posicion][best_node_idx]){
+
 						if(!is_return_depot){
 							camiones[car_idx].anadir_cliente(&clientes[best_node_idx],distancia_matriz,1);
 						}else{
 							camiones[car_idx].anadir_cliente(&clientes[traileres[trailer_idx].posicion_actual],distancia_matriz,0);
 							identificador_subtour = 0;
 						}
-					}
-					else{
-						camiones[car_idx].anadir_cliente(&clientes[traileres[trailer_idx].posicion_actual],distancia_matriz,0);
-						if (trailer_idx < numero_traileres){
-							identificador_subtour = 0;
-						}
-					}
 				}
 			}else{
+				std::cout <<"ruta de camion "<< car_idx;
+				if(camiones[car_idx].tour.empty()){
+					camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz,1);// nodes[0] is depot
+				}
 				if(!is_return_depot){
 					camiones[car_idx].anadir_cliente(&clientes[best_node_idx],distancia_matriz,1);
 				}else{
-					if (car_idx < numero_camion){
+					if (car_idx + 1 <= numero_camion){
 						if (camiones[car_idx].id_posicion != 0){
 							camiones[car_idx].anadir_cliente(&clientes[0],distancia_matriz,1);
 						}
 						identificador_ruta_camion = 0;
 						car_idx += 1;
+						if (trailer_idx + 1 > numero_traileres){
+							identificador_ruta_camion = 1;
+						}
 					}
 					else{
 						break;
@@ -219,6 +225,8 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 				}
 			}
 	}
+	camiones[car_idx].anadir_cliente(&clientes[0],distancia_matriz,1);
+	traileres[trailer_idx].anadir_cliente_trailer(&clientes[0],distancia_matriz,camiones[car_idx]);
 }
 //algoritmo que se encarga de calcular la distancia total del tour(es la funcion evaluacion)
 void Grafo::calculo_distancia_tour(std::vector<Cliente>tour, double &tour_distance) const
@@ -244,10 +252,10 @@ void Grafo::show_each_car_tour() const
 			calculo_distancia_tour(camiones[i].tour, tour_distance);
 			total_tour_distance += tour_distance;
 			std::cout << " " << std::fixed << std::setprecision(1) << tour_distance << "km\n";
+			std::cout << ", now_load:" << camiones[i].carga_actual << "/" << camiones[i].capacidad_camion << std::endl;
 			total_visited_customer += camiones[i].tour.size()-2;
-		}
-		else{
-			
+		}else{
+			std::cout << "vehicle" << i << ": not used" << std::endl;
 		}
 	}
 	double total_tour_distance_trailer = 0.0;
@@ -262,64 +270,22 @@ void Grafo::show_each_car_tour() const
 			calculo_distancia_tour(traileres[i].tour_trailer, tour_distance_trailer);
 			total_tour_distance_trailer += tour_distance_trailer;
 			std::cout << " " << std::fixed << std::setprecision(1) << tour_distance_trailer << "km\n";
+			std::cout << ", now_load:" << traileres[i].cargar_actual_trailer << "/" << traileres[i].capacidad_trailer << std::endl;
 			total_visited_customer_trailer+= traileres[i].tour_trailer.size()-2;
-		}
-		else{
-			
+		}else{
+			std::cout << "trailer" << i << ": not used" << std::endl;
 		}
 }
 	std::cout << "total distance:" << total_tour_distance << "km \n" << std::endl;
 	std::cout << "total distance trailer:" << total_tour_distance_trailer << "km\n" << std::endl;
-	std::cout << "total visited customer:" << total_visited_customer << "/" << numero_cliente - 1 << std::endl;
+	std::cout << "total visited customer:" << total_visited_customer  + total_visited_customer_trailer << "/" << numero_cliente - 1 << std::endl;
+	for (int n = 0; n <= numero_cliente;n++){
+		if (clientes[n].visitado == false){
+			std::cout<<clientes[n].id << " ";
+		}
+	}
 }
 //funcion que sigue con los camiones que no fueron utilizados para responder a los clientes que quedaron
-void Grafo::greedyonlyvehicles(int car_idx,int iteraciones){
-	int vehiculos = car_idx;
-	int max_iteraciones = iteraciones;
-	while(!is_all_visited()){
-		max_iteraciones +=1;
-		int best_node_idx;
-		double min_distance = 100000;
-		bool is_return_depot = true;
-		
-		if(camiones[vehiculos].tour.empty()){
-			camiones[vehiculos].anadir_cliente(&clientes[0], distancia_matriz,1);// nodes[0] is depot
-		}
-
-		for(int node_idx = 1; node_idx < numero_cliente; node_idx++){
-			if(!clientes[node_idx].visitado){
-				if(camiones[vehiculos].capacidad_ok(clientes[node_idx])){
-						double tmp_distance = distancia_matriz[camiones[vehiculos].id_posicion][node_idx];
-						if(tmp_distance < min_distance){
-							min_distance = tmp_distance;
-							is_return_depot = false;
-							best_node_idx = node_idx;
-						}
-					}
-				}
-			}
-
-		if(!is_return_depot){
-			camiones[vehiculos].anadir_cliente(&clientes[best_node_idx], distancia_matriz,1);
-		}
-		else{// si no hay caminos regresa al deposito
-			if(vehiculos + 1 < numero_camion){// Chequea si existen mas vehiculos
-				if(camiones[vehiculos].id_posicion != 0){
-					camiones[vehiculos].anadir_cliente(&clientes[0],distancia_matriz,1);
-				}
-				vehiculos += 1;
-			}
-			else{
-				break;
-			}
-			
-		}
-	}//ciclo while termina
-	if(camiones[vehiculos].id_posicion != 0){
-				camiones[vehiculos].anadir_cliente(&clientes[0], distancia_matriz,1);
-	}
-	std::cout << " Iteraciones realizadas por el algoritmo greedy: "<< max_iteraciones;
-}
 
 void Grafo::calcular_distancias_totales(double &distancia_total,double &distancia_total_trailer) const
 {
