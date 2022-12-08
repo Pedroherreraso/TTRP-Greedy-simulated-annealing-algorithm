@@ -14,13 +14,19 @@ int main(int argc, char *argv[]){
     capacidad_camiones = 0.0;
     traileres = 0;
     capacidad_traileres = 0.0;
+    int valor,iteraciones_programa = 0;
     leer_archivo(argv[1],param,camiones,capacidad_camiones, traileres, capacidad_traileres, clientes);
-   	Grafo* grafo = new Grafo(param, capacidad_camiones, camiones);
-	grafo->GreedyAlgorithm();
-	grafo->show_each_car_tour();
-	// grafo->show_node_info();
-	// grafo->mostrar_distancias();
-	delete grafo;
+   	Grafo* grafo = new Grafo(param, capacidad_camiones, camiones,capacidad_traileres,traileres);
+	grafo->GreedyAlgorithm(iteraciones_programa);
+    grafo -> sa(iteraciones,temperatura, valor, iteraciones_programa);
+    // if (valor == 1){
+    //     delete grafo;
+	//     grafo = nullptr;
+    //     int iteraciones_falsas = 0;
+    //     grafo->GreedyAlgorithm(iteraciones_falsas);
+    // }
+    grafo->show_each_car_tour();
+    delete grafo;
 	grafo = nullptr;
     return 0;
 }
