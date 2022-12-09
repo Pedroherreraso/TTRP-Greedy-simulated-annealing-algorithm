@@ -3,7 +3,7 @@
 #include <string>
 #include <cmath> // sqrt, pow
 #include <iomanip> // std::setprecision
-#include "grafo.h"
+#include "include/grafo.h"
 #include <cstdlib>
 #include <random>
 // se calcula la distancia entre los nodos(clientes)
@@ -60,7 +60,6 @@ Grafo::Grafo(std::vector<std::vector<int> > param,
 // se libera la memoria
 Grafo::~Grafo()
 { 
-	std::cout << "destructor!" << std::endl;
 	delete[] clientes;
 	clientes = nullptr;
 	delete[] camiones;
@@ -101,14 +100,12 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 		int trailer_idx = 0;
 		int car_idx = 0;
 		int identificador_subtour = 0;
-		int identificador_ruta_camion = 0;
 		//si todos estan visitados
 		while(!is_all_visited()){
 			iteraciones +=1;
 			int best_node_idx;
 			double min_distance = 100000;
 			bool is_return_depot = true;
-			
 			if(traileres[trailer_idx].tour_trailer.empty()){
 					traileres[trailer_idx].anadir_cliente_trailer(&clientes[0], distancia_matriz,camiones[car_idx]);// nodes[0] is depot
 					camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz,1);
@@ -116,15 +113,37 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 		// reviso el nodo mas cercano y los escojo
 			for(int node_idx = 1; node_idx < numero_cliente; node_idx++){
 				if(!clientes[node_idx].visitado){
-					if (identificador_ruta_camion == 0){
-						if(identificador_subtour == 0){
-							if(clientes[node_idx].tipo_cliente == 0){
+					if (trailer_idx < numero_traileres){// me aseguro que se encargue de primero asignar las rutas de traileres
+						if(traileres[trailer_idx].posicion_actual == 0){
+							if (clientes[node_idx].tipo_cliente == 0){
 								if(traileres[trailer_idx].capacidad_trailer_ok(clientes[node_idx])){
 									double tmp_distance = distancia_matriz[traileres[trailer_idx].posicion_actual][node_idx];
 									if(tmp_distance < min_distance){
 										min_distance = tmp_distance;
 										is_return_depot = false;
 										best_node_idx = node_idx;
+									}
+								}
+							}
+						}else{
+							if(identificador_subtour == 0){
+								if(clientes[node_idx].tipo_cliente == 0){// verifico si es un cliente que el trailer puede atender
+									if(traileres[trailer_idx].capacidad_trailer_ok(clientes[node_idx])){
+										double tmp_distance = distancia_matriz[traileres[trailer_idx].posicion_actual][node_idx];
+										if(tmp_distance < min_distance){
+											min_distance = tmp_distance;
+											is_return_depot = false;
+											best_node_idx = node_idx;
+										}
+									}
+								}else{
+									if (camiones[car_idx].capacidad_ok(clientes[node_idx])){
+										double tmp_distance = distancia_matriz[camiones[car_idx].id_posicion][node_idx];
+										if(tmp_distance < min_distance){
+											min_distance = tmp_distance;
+											is_return_depot = false;
+											best_node_idx = node_idx;
+										}
 									}
 								}
 							}else{
@@ -137,17 +156,8 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 									}
 								}
 							}
-						}else{
-							if (camiones[car_idx].capacidad_ok(clientes[node_idx])){
-								double tmp_distance = distancia_matriz[camiones[car_idx].id_posicion][node_idx];
-								if(tmp_distance < min_distance){
-									min_distance = tmp_distance;
-									is_return_depot = false;
-									best_node_idx = node_idx;
-								}
-							}
 						}
-					}else{
+					}else{//En caso de que no queden traileres asigno los camiones restantes
 						if (camiones[car_idx].capacidad_ok(clientes[node_idx])){
 							double tmp_distance = distancia_matriz[camiones[car_idx].id_posicion][node_idx];
 							if(tmp_distance < min_distance){
@@ -159,7 +169,7 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 					}
 				}
 			}
-			if (identificador_ruta_camion == 0){
+			if (trailer_idx < numero_traileres){
 				if (identificador_subtour == 0){
 					if (clientes[best_node_idx].tipo_cliente == 0){
 						if(!is_return_depot){
@@ -172,28 +182,32 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 								}
 								car_idx +=1;
 								trailer_idx +=1;
-							}else{
-								identificador_ruta_camion = 1;
 							}
 						}
 					}else{
-						if(traileres[trailer_idx].posicion_actual == 0){
-							if (camiones[car_idx].tour.empty()){
-								camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz, 1);
-							}
-							camiones[car_idx].anadir_cliente(&clientes[best_node_idx], distancia_matriz, 1);
-							identificador_ruta_camion = 1;
-						}
-						else{
-							if(camiones[car_idx].tour.empty()){
-								camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz,1);// nodes[0] is depot
-							}
+						if(!is_return_depot){
+							camiones[car_idx].anadir_cliente(&clientes[best_node_idx],distancia_matriz,1);
 							identificador_subtour = 1;
-							camiones[car_idx].anadir_cliente(&clientes[best_node_idx], distancia_matriz, 1);
+						}else{
+							camiones[car_idx].anadir_cliente(&clientes[traileres[trailer_idx].posicion_actual],distancia_matriz,0);
+							identificador_subtour = 0;
+							if (quedan() == true){
+								if (le_cabe_uno_mas(traileres[trailer_idx]) == false ){
+									if (traileres[trailer_idx].posicion_actual != 0){
+										traileres[trailer_idx].anadir_cliente_trailer(&clientes[0],distancia_matriz,camiones[car_idx]);
+										camiones[car_idx].anadir_cliente(&clientes[0],distancia_matriz,1);
+									}car_idx +=1;
+									trailer_idx +=1;
+								}
+							}else{
+								traileres[trailer_idx].anadir_cliente_trailer(&clientes[0],distancia_matriz,camiones[car_idx]);
+								camiones[car_idx].anadir_cliente(&clientes[0],distancia_matriz,1);
+								car_idx +=1;
+								trailer_idx +=1;
+							}
 						}
 					}
 				}else{
-
 						if(!is_return_depot){
 							camiones[car_idx].anadir_cliente(&clientes[best_node_idx],distancia_matriz,1);
 						}else{
@@ -202,37 +216,35 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 						}
 				}
 			}else{
-				std::cout <<"ruta de camion "<< car_idx;
 				if(camiones[car_idx].tour.empty()){
 					camiones[car_idx].anadir_cliente(&clientes[0], distancia_matriz,1);// nodes[0] is depot
 				}
 				if(!is_return_depot){
 					camiones[car_idx].anadir_cliente(&clientes[best_node_idx],distancia_matriz,1);
 				}else{
-					if (car_idx + 1 <= numero_camion){
+					if (car_idx + 1 < numero_camion){
 						if (camiones[car_idx].id_posicion != 0){
 							camiones[car_idx].anadir_cliente(&clientes[0],distancia_matriz,1);
 						}
-						identificador_ruta_camion = 0;
 						car_idx += 1;
-						if (trailer_idx + 1 > numero_traileres){
-							identificador_ruta_camion = 1;
-						}
-					}
-					else{
+					}else{
 						break;
 					}
 				}
 			}
-	}
-	camiones[car_idx].anadir_cliente(&clientes[0],distancia_matriz,1);
-	traileres[trailer_idx].anadir_cliente_trailer(&clientes[0],distancia_matriz,camiones[car_idx]);
+		}
+		if (camiones[car_idx].id_posicion != 0){camiones[car_idx].anadir_cliente(&clientes[0],distancia_matriz,1);}
+		
+
 }
 //algoritmo que se encarga de calcular la distancia total del tour(es la funcion evaluacion)
 void Grafo::calculo_distancia_tour(std::vector<Cliente>tour, double &tour_distance) const
 {
 	if(tour.size() > 2){
-		for(int j = 0; j < tour.size() - 1; j++){
+		double prueba1,prueba2;
+		for(double j = 0; j < tour.size() - 1; j++){
+			prueba1 = tour[j].id;
+			prueba2 = tour[j+1].id;
 			tour_distance += distancia_matriz[tour[j].id][tour[j+1].id];
 		}
 	}
@@ -241,79 +253,162 @@ void Grafo::calculo_distancia_tour(std::vector<Cliente>tour, double &tour_distan
 void Grafo::show_each_car_tour() const
 {
 	double total_tour_distance = 0.0;
-	int total_visited_customer = 0;
 	for(int i = 0; i < numero_camion; i++){
 		if(camiones[i].tour.size() > 1){
-			std::cout << "vehicle " << i << " tour: ";
+			std::cout << "vehicle " << " tour: ";
 			double tour_distance = 0.0;
-			for(int j = 0; j < camiones[i].tour.size(); j++){
+			for(double j = 0; j < camiones[i].tour.size(); j++){
 				std::cout << camiones[i].tour[j].id << " ";
 			}
 			calculo_distancia_tour(camiones[i].tour, tour_distance);
 			total_tour_distance += tour_distance;
 			std::cout << " " << std::fixed << std::setprecision(1) << tour_distance << "km\n";
-			std::cout << ", now_load:" << camiones[i].carga_actual << "/" << camiones[i].capacidad_camion << std::endl;
-			total_visited_customer += camiones[i].tour.size()-2;
-		}else{
-			std::cout << "vehicle" << i << ": not used" << std::endl;
+		}
+		else{
+			
 		}
 	}
 	double total_tour_distance_trailer = 0.0;
-	int total_visited_customer_trailer = 0;
 		for(int i = 0; i < numero_traileres; i++){
 		if(traileres[i].tour_trailer.size() > 1){
-			std::cout << "trailer " << i << " tour: ";
+			std::cout << "trailer " << " tour: ";
 			double tour_distance_trailer = 0.0;
-			for(int j = 0; j < traileres[i].tour_trailer.size(); j++){
+			for(double j = 0; j < traileres[i].tour_trailer.size(); j++){
 				std::cout << traileres[i].tour_trailer[j].id << " ";
 			}
 			calculo_distancia_tour(traileres[i].tour_trailer, tour_distance_trailer);
 			total_tour_distance_trailer += tour_distance_trailer;
 			std::cout << " " << std::fixed << std::setprecision(1) << tour_distance_trailer << "km\n";
-			std::cout << ", now_load:" << traileres[i].cargar_actual_trailer << "/" << traileres[i].capacidad_trailer << std::endl;
-			total_visited_customer_trailer+= traileres[i].tour_trailer.size()-2;
-		}else{
-			std::cout << "trailer" << i << ": not used" << std::endl;
+		}
+		else{
+			
 		}
 }
-	std::cout << "total distance:" << total_tour_distance << "km \n" << std::endl;
-	std::cout << "total distance trailer:" << total_tour_distance_trailer << "km\n" << std::endl;
-	std::cout << "total visited customer:" << total_visited_customer  + total_visited_customer_trailer << "/" << numero_cliente - 1 << std::endl;
-	for (int n = 0; n <= numero_cliente;n++){
+	std::cout << "Costo/Distancia total de viaje:" << total_tour_distance + total_tour_distance_trailer << "km \n" << std::endl;
+	for(int n;n <= numero_cliente;n++){
 		if (clientes[n].visitado == false){
-			std::cout<<clientes[n].id << " ";
+			std::cout << clientes[n].id;
 		}
 	}
 }
 //funcion que sigue con los camiones que no fueron utilizados para responder a los clientes que quedaron
-
-void Grafo::calcular_distancias_totales(double &distancia_total,double &distancia_total_trailer) const
+void Grafo::calcular_distancias_totales(double &distancia_total)
 {
-	int total_visited_customer = 0;
 	for(int i = 0; i < numero_camion; i++){
 		if(camiones[i].tour.size() > 1){
 			double tour_distance = 0.0;
-			for(int j = 0; j < camiones[i].tour.size(); j++){
+			for(double j = 0; j < camiones[i].tour.size(); j++){
 			}
 			calculo_distancia_tour(camiones[i].tour, tour_distance);
 			distancia_total += tour_distance;
-			total_visited_customer += camiones[i].tour.size()-2;
 		}
 	}
-	int total_visited_customer_trailer = 0;
 			for(int i = 0; i < numero_traileres; i++){
 			if(traileres[i].tour_trailer.size() > 1){
 				double tour_distance_trailer = 0.0;
-				for(int j = 0; j < traileres[i].tour_trailer.size(); j++){
+				for(double j = 0; j < traileres[i].tour_trailer.size(); j++){
 				}
 				calculo_distancia_tour(traileres[i].tour_trailer, tour_distance_trailer);
-				distancia_total_trailer += tour_distance_trailer;
-				total_visited_customer_trailer+= traileres[i].tour_trailer.size()-2;
+				distancia_total += tour_distance_trailer;
 			}
 		}	
 }
-
+bool Grafo::le_cabe_uno_mas(Trailer a)
+{
+	bool valor = false;
+	for(int i; i < numero_cliente; i++){
+		if (clientes[i].tipo_cliente == 0){
+			if(a.cargar_actual_trailer + clientes[i].demanda < a.capacidad_trailer ){
+				valor = true;
+			}
+		}
+	}
+	return valor;
+}
+bool Grafo::quedan(){
+	for(int i; i < numero_cliente; i++){
+		if (clientes[i].tipo_cliente == 0 && clientes[i].visitado == false){
+			return true;
+		}
+	}
+	return false;
+}
 // algoritmo simulated annealing
-void Grafo::sa(int iteraciones, int temperatura, int &valor,int &iteraciones_programa){
+void Grafo::sa(int iteraciones_maximas, int temperatura_maxima, int &valor,int &iteraciones_programa){
+	std::random_device rd;
+    std::default_random_engine eng(rd());
+    std::uniform_real_distribution<float> distr(0, 1);
+	int iteraciones_sa = 0;
+	int cantidad_de_iteraciones_para_bajar = 1 + rand()%(20 - 1);
+	int iteraciones_ultima_bajada = 0;
+	int bajada = 1 + rand()%(50 - 1);
+	double distancia_greedy,distancia_sa,distancia_cambiante;
+	calcular_distancias_totales(distancia_greedy);
+	calcular_distancias_totales(distancia_sa);
+	while (iteraciones_sa < iteraciones_maximas){
+		Cliente almacenador;
+		iteraciones_ultima_bajada +=1;
+		if (temperatura_maxima == 0){
+			break;
+		}
+		if (iteraciones_ultima_bajada == cantidad_de_iteraciones_para_bajar){
+			temperatura_maxima -= bajada;
+			iteraciones_ultima_bajada = 0;
+		}
+		if (distr(eng) <= 0.5){
+			int trailer_aleatorio1 = 1 + rand()%(numero_traileres - 1);
+			double cliente_aleatorio_del_trailer_uno = 1 + rand()%(traileres[trailer_aleatorio1].tour_trailer.size() - 2);
+			int trailer_aleatorio2 = 1 + rand()%(numero_traileres - 1);
+			double cliente_aleatorio_del_trailer_dos = 1 + rand()%(traileres[trailer_aleatorio2].tour_trailer.size() - 2);
+			if (trailer_aleatorio1 != trailer_aleatorio2 && cliente_aleatorio_del_trailer_uno != cliente_aleatorio_del_trailer_dos){
+				almacenador = traileres[trailer_aleatorio1].tour_trailer[cliente_aleatorio_del_trailer_uno];
+				traileres[trailer_aleatorio1].tour_trailer[cliente_aleatorio_del_trailer_uno] = traileres[trailer_aleatorio2].tour_trailer[cliente_aleatorio_del_trailer_dos];
+				traileres[trailer_aleatorio2].tour_trailer[cliente_aleatorio_del_trailer_dos] = almacenador;
+				calcular_distancias_totales(distancia_cambiante);
+				if (distancia_cambiante < distancia_sa){
+					distancia_sa = distancia_cambiante;
+				}else{
+					if(exp(-(distancia_cambiante - distancia_greedy)/temperatura_maxima) > distr(eng)){
+						iteraciones_sa += 1;
+					}else{
+						almacenador = traileres[trailer_aleatorio2].tour_trailer[cliente_aleatorio_del_trailer_dos];
+						traileres[trailer_aleatorio2].tour_trailer[cliente_aleatorio_del_trailer_dos] = traileres[trailer_aleatorio1].tour_trailer[cliente_aleatorio_del_trailer_uno];
+						traileres[trailer_aleatorio1].tour_trailer[cliente_aleatorio_del_trailer_uno] = almacenador;
+					}
+				}
+			}else{
+				iteraciones_sa +=1;
+			}
+		  }//else{
+		// 	// es posible que se intercambie un cliente mayor que el disponible
+		// 	int camion_aleatorio1 = 1 + rand()%(numero_camion - 1);
+		// 	double cliente_aleatorio_del_camion_uno = 1 + rand()%(camiones[camion_aleatorio1].tour.size() - 2);
+		// 	int camion_aleatorio2 = 1 + rand()%(numero_camion - 1);
+		// 	double cliente_aleatorio_del_camion_dos = 1 + rand()%(camiones[camion_aleatorio2].tour.size() - 2);
+		// 	if (camion_aleatorio1 != camion_aleatorio2 && cliente_aleatorio_del_camion_uno != cliente_aleatorio_del_camion_dos){
+		// 		almacenador = camiones[camion_aleatorio1].tour[cliente_aleatorio_del_camion_uno];
+		// 		camiones[camion_aleatorio1].tour[cliente_aleatorio_del_camion_uno] = camiones[camion_aleatorio2].tour[cliente_aleatorio_del_camion_dos];
+		// 		camiones[camion_aleatorio2].tour[cliente_aleatorio_del_camion_dos] = almacenador;
+		// 		calcular_distancias_totales(distancia_cambiante);
+		// 		if (distancia_cambiante < distancia_sa){
+		// 			distancia_sa = distancia_cambiante;
+		// 		}else{
+		// 			if(exp(-(distancia_cambiante - distancia_greedy)/temperatura_maxima) > distr(eng)){
+		// 				iteraciones_sa += 1;
+		// 			}else{
+		// 				almacenador = camiones[camion_aleatorio2].tour[cliente_aleatorio_del_camion_dos];
+		// 				camiones[camion_aleatorio2].tour[cliente_aleatorio_del_camion_dos] = traileres[camion_aleatorio1].tour_trailer[cliente_aleatorio_del_camion_uno];
+		// 				camiones[camion_aleatorio1].tour[cliente_aleatorio_del_camion_uno] = almacenador;
+		// 			}
+		// 		}
+		// 	}else{
+		// 		iteraciones_sa +=1;
+		// 	}
+		// }
 
+	}
+	iteraciones_programa += iteraciones_sa;
+	if (distancia_greedy > distancia_sa){
+		valor = 1;
+	}
 }

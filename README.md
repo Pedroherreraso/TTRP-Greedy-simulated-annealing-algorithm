@@ -14,8 +14,12 @@ Para que el algoritmo fucione las instancias de prueba solo pueden ser numeros e
 
 ```make```
 
-```./TTRP "ubicacion del archivo" "numero de iteraciones" "Temperatura inicial" ```
+```./TTRP "ubicacion del archivo" "numero de iteraciones con las que si o si termina el algoritmo Simulated Annealing" "Temperatura inicial del Simulated Annealing" ```
 
 Ejemplo:
 
-``` ./TTRP instances/TTRP_01.txt 1000 100 ```
+``` ./TTRP instances/TTRP_01.txt 100 100 ```
+
+# IMPORTANTE
+
+Cabe destacar que el algoritmo de simulated annealing puede terminar antes ya que se escogido como disminuye la temperatura de manera aleatoria
