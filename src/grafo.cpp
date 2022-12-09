@@ -310,6 +310,7 @@ void Grafo::calcular_distancias_totales(double &distancia_total)
 			}
 		}	
 }
+// se encarga de revisar si le de los nodos disponibles para el trailer alguno cumple con la restriccion de carga
 bool Grafo::le_cabe_uno_mas(Trailer a)
 {
 	bool valor = false;
@@ -322,6 +323,7 @@ bool Grafo::le_cabe_uno_mas(Trailer a)
 	}
 	return valor;
 }
+// revisa si es que quedan clientes disponibles para ruta de trailer
 bool Grafo::quedan(){
 	for(int i; i < numero_cliente; i++){
 		if (clientes[i].tipo_cliente == 0 && clientes[i].visitado == false){
@@ -411,6 +413,9 @@ void Grafo::sa(int iteraciones_maximas, int temperatura_maxima, int &valor,int &
 				}
 			}
 		}
+	}
+	if (distancia_sa < distancia_greedy){
+		valor = 1;
 	}
 }
 	
