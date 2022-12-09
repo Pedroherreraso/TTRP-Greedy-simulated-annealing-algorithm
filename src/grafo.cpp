@@ -241,10 +241,7 @@ void Grafo::GreedyAlgorithm(int &iteraciones)
 void Grafo::calculo_distancia_tour(std::vector<Cliente>tour, double &tour_distance) const
 {
 	if(tour.size() > 2){
-		double prueba1,prueba2;
 		for(double j = 0; j < tour.size() - 1; j++){
-			prueba1 = tour[j].id;
-			prueba2 = tour[j+1].id;
 			tour_distance += distancia_matriz[tour[j].id][tour[j+1].id];
 		}
 	}
@@ -345,70 +342,74 @@ void Grafo::sa(int iteraciones_maximas, int temperatura_maxima, int &valor,int &
 	double distancia_greedy,distancia_sa,distancia_cambiante;
 	calcular_distancias_totales(distancia_greedy);
 	calcular_distancias_totales(distancia_sa);
+	Cliente almacenador;
 	while (iteraciones_sa < iteraciones_maximas){
-		Cliente almacenador;
-		iteraciones_ultima_bajada +=1;
-		if (temperatura_maxima == 0){
-			break;
-		}
-		if (iteraciones_ultima_bajada == cantidad_de_iteraciones_para_bajar){
-			temperatura_maxima -= bajada;
+		if (cantidad_de_iteraciones_para_bajar = iteraciones_ultima_bajada){
+			temperatura_maxima = temperatura_maxima - bajada;
+			if (temperatura_maxima <= 0){
+				break;
+			}
 			iteraciones_ultima_bajada = 0;
 		}
-		if (distr(eng) <= 0.5){
-			int trailer_aleatorio1 = 1 + rand()%(numero_traileres - 1);
-			double cliente_aleatorio_del_trailer_uno = 1 + rand()%(traileres[trailer_aleatorio1].tour_trailer.size() - 2);
-			int trailer_aleatorio2 = 1 + rand()%(numero_traileres - 1);
-			double cliente_aleatorio_del_trailer_dos = 1 + rand()%(traileres[trailer_aleatorio2].tour_trailer.size() - 2);
-			if (trailer_aleatorio1 != trailer_aleatorio2 && cliente_aleatorio_del_trailer_uno != cliente_aleatorio_del_trailer_dos){
-				almacenador = traileres[trailer_aleatorio1].tour_trailer[cliente_aleatorio_del_trailer_uno];
-				traileres[trailer_aleatorio1].tour_trailer[cliente_aleatorio_del_trailer_uno] = traileres[trailer_aleatorio2].tour_trailer[cliente_aleatorio_del_trailer_dos];
-				traileres[trailer_aleatorio2].tour_trailer[cliente_aleatorio_del_trailer_dos] = almacenador;
-				calcular_distancias_totales(distancia_cambiante);
-				if (distancia_cambiante < distancia_sa){
-					distancia_sa = distancia_cambiante;
-				}else{
-					if(exp(-(distancia_cambiante - distancia_greedy)/temperatura_maxima) > distr(eng)){
-						iteraciones_sa += 1;
+		if (distr(eng) > 0.5){
+			int camion1 = rand()%numero_camion;
+			int camion2 = rand()%numero_camion;
+			int b = camiones[camion1].tour.size();
+			int c = camiones[camion2].tour.size();
+			if (camiones[camion1].tour.size() > 3 && camiones[camion2].tour.size()>3){
+				int cliente1 = 1 + rand()%(b - 1);
+				int cliente2 = 1 + rand()%(c - 1);
+				if (cliente1 != 0 && cliente2 != 0){
+					almacenador = camiones[camion1].tour[cliente1];
+					camiones[camion1].tour[cliente1] = camiones[camion2].tour[cliente2];
+					camiones[camion2].tour[cliente2] = almacenador;
+					calcular_distancias_totales(distancia_cambiante);
+					if (distancia_cambiante < distancia_sa){
+						distancia_sa = distancia_cambiante;
+						iteraciones_sa+=1;
 					}else{
-						almacenador = traileres[trailer_aleatorio2].tour_trailer[cliente_aleatorio_del_trailer_dos];
-						traileres[trailer_aleatorio2].tour_trailer[cliente_aleatorio_del_trailer_dos] = traileres[trailer_aleatorio1].tour_trailer[cliente_aleatorio_del_trailer_uno];
-						traileres[trailer_aleatorio1].tour_trailer[cliente_aleatorio_del_trailer_uno] = almacenador;
+						if(exp(-((distancia_cambiante - distancia_sa)/temperatura_maxima)) < distr(eng)){
+							almacenador = camiones[camion1].tour[cliente1];
+							camiones[camion1].tour[cliente1] = camiones[camion2].tour[cliente2];
+							camiones[camion2].tour[cliente2] = almacenador;
+							iteraciones_sa +=1;
+						}else{							
+							iteraciones_ultima_bajada += 1;
+							iteraciones_sa +=1;
+						}
 					}
 				}
-			}else{
-				iteraciones_sa +=1;
 			}
-		  }//else{
-		// 	// es posible que se intercambie un cliente mayor que el disponible
-		// 	int camion_aleatorio1 = 1 + rand()%(numero_camion - 1);
-		// 	double cliente_aleatorio_del_camion_uno = 1 + rand()%(camiones[camion_aleatorio1].tour.size() - 2);
-		// 	int camion_aleatorio2 = 1 + rand()%(numero_camion - 1);
-		// 	double cliente_aleatorio_del_camion_dos = 1 + rand()%(camiones[camion_aleatorio2].tour.size() - 2);
-		// 	if (camion_aleatorio1 != camion_aleatorio2 && cliente_aleatorio_del_camion_uno != cliente_aleatorio_del_camion_dos){
-		// 		almacenador = camiones[camion_aleatorio1].tour[cliente_aleatorio_del_camion_uno];
-		// 		camiones[camion_aleatorio1].tour[cliente_aleatorio_del_camion_uno] = camiones[camion_aleatorio2].tour[cliente_aleatorio_del_camion_dos];
-		// 		camiones[camion_aleatorio2].tour[cliente_aleatorio_del_camion_dos] = almacenador;
-		// 		calcular_distancias_totales(distancia_cambiante);
-		// 		if (distancia_cambiante < distancia_sa){
-		// 			distancia_sa = distancia_cambiante;
-		// 		}else{
-		// 			if(exp(-(distancia_cambiante - distancia_greedy)/temperatura_maxima) > distr(eng)){
-		// 				iteraciones_sa += 1;
-		// 			}else{
-		// 				almacenador = camiones[camion_aleatorio2].tour[cliente_aleatorio_del_camion_dos];
-		// 				camiones[camion_aleatorio2].tour[cliente_aleatorio_del_camion_dos] = traileres[camion_aleatorio1].tour_trailer[cliente_aleatorio_del_camion_uno];
-		// 				camiones[camion_aleatorio1].tour[cliente_aleatorio_del_camion_uno] = almacenador;
-		// 			}
-		// 		}
-		// 	}else{
-		// 		iteraciones_sa +=1;
-		// 	}
-		// }
-
-	}
-	iteraciones_programa += iteraciones_sa;
-	if (distancia_greedy > distancia_sa){
-		valor = 1;
+		}else{
+			int trailer1 = rand()%numero_traileres;
+			int trailer2 = rand()%numero_traileres;
+			int b = traileres[trailer1].tour_trailer.size();
+			int c = traileres[trailer2].tour_trailer.size();
+			if (traileres[trailer1].tour_trailer.size() > 3 && traileres[trailer2].tour_trailer.size() > 3){
+				int cliente1 = 1 + rand()%(b-1);
+				int cliente2 = 1 + rand()%(c-1);
+				if(cliente1 != 0 && cliente2 != 0){
+					almacenador = traileres[trailer1].tour_trailer[cliente1];
+					traileres[trailer1].tour_trailer[cliente1] = traileres[trailer2].tour_trailer[cliente2];
+					traileres[trailer2].tour_trailer[cliente2] = almacenador;
+					calcular_distancias_totales(distancia_cambiante);
+					if(distancia_cambiante < distancia_sa){
+						iteraciones_sa +=1;
+						iteraciones_ultima_bajada +=1;
+					}
+					else{
+						if(exp(-((distancia_cambiante - distancia_sa)/temperatura_maxima)) < distr(eng)){
+							almacenador = traileres[trailer1].tour_trailer[cliente1];
+							traileres[trailer1].tour_trailer[cliente1] = traileres[trailer2].tour_trailer[cliente2];
+							traileres[trailer2].tour_trailer[cliente2] = almacenador;
+							iteraciones_sa +=1;
+						}else{							
+							iteraciones_ultima_bajada += 1;
+							iteraciones_sa +=1;
+						}
+					}
+				}
+			}
+		}
 	}
 }
