@@ -28,12 +28,14 @@ int main(int argc, char*argv[]){
 	    Grafo* graf = new Grafo(param, capacidad_camiones, camiones,capacidad_traileres,traileres);
 	    graf->GreedyAlgorithm(iteraciones_programa);
         graf->show_each_car_tour();
+        delete graf;
+	    graf = nullptr;
     }else{
         grafo->show_each_car_tour();
-        std::cout << "iteraciones realizadas "<<iteraciones_programa<<"\n";
         delete grafo;
 	    grafo = nullptr;
     }
+    std::cout << "iteraciones realizadas "<<iteraciones_programa<<"\n";
     auto end = std::chrono::system_clock::now();
     
     std::chrono::duration<float,std::milli> duration = end - start;

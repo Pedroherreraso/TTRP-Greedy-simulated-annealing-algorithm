@@ -417,5 +417,6 @@ void Grafo::sa(int iteraciones_maximas, int temperatura_maxima, int &valor,int &
 	if (distancia_sa < distancia_greedy){
 		valor = 1;
 	}
+	iteraciones_programa += iteraciones_sa;
 }
 	
